@@ -1,0 +1,19 @@
+configuration:
+  application-tag: 0.0.1-api-test-demo
+  database:
+    name: libdemo
+    password: postgres
+  api:
+    path: /api
+    username:
+      user: default_user
+      manager: manager
+      librarian: default_librarian
+      admin: admin
+    default_password: password
+spring:
+  data:
+    redis:
+      connect-timeout: 3s
+  main:
+    banner-mode: off

@@ -1,0 +1,39 @@
+name: Run tests
+
+on:
+  push:
+    branches:
+      - "*"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Java
+        uses: actions/setup-java@v6
+        with:
+          java-version: 21
+          distribution: temurin
+
+      - name: Get timestamp
+        id: timestamp
+        run: echo "timestamp=$(date +'%Y-%m-%d_%H-%M-%S')" >> "$GITHUB_OUTPUT"
+
+      - name: Run tests
+        run: ./mvnw test
+
+      - name: Build report
+        if: always()
+        run: ./mvnw allure:report
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: report-${{ steps.timestamp.outputs.timestamp }}
+          path: 'target/site/allure-maven-plugin'

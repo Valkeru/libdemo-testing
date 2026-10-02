@@ -1,0 +1,25 @@
+{
+  "id": "${json-unit.any-string}",
+  "isbn": "978-5-17-049678-5",
+  "title": "test_8ae3cd18ca",
+  "authors": [
+    {
+      "firstName": "test_9b844b884b",
+      "id": "84c1599c-21e6-47f3-a03b-12f6071da20b",
+      "lastName": "test_6012cf646d",
+      "middleName": "test_90321cca80"
+    }
+  ],
+  "cycle": {
+    "id": "7cc6be9b-7649-4955-bff9-8cbf7c4c429a",
+    "title": "test_9411799dad"
+  },
+  "series": {
+    "cycle": {
+      "id": "7cc6be9b-7649-4955-bff9-8cbf7c4c429a",
+      "title": "test_9411799dad"
+    },
+    "id": "697792d6-8d57-4d6f-9ea2-c91b01159612",
+    "title": "test_42db2cab8e"
+  }
+}

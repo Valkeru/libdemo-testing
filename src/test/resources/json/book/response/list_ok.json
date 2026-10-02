@@ -1,0 +1,18 @@
+{
+  "content": [
+    {
+      "id": "989b056f-31ef-4682-8f64-a21743939aab",
+      "name": "test_d29827772a",
+      "isbn": "978-5-17-049678-5",
+      "authorsNames": [
+        "test_9b844b884b test_90321cca80 test_6012cf646d"
+      ]
+    }
+  ],
+  "page": {
+    "size": 10,
+    "number": 0,
+    "totalElements": 1,
+    "totalPages": 1
+  }
+}

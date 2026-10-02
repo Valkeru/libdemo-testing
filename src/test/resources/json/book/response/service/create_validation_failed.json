@@ -1,0 +1,14 @@
+[
+  {
+    "field": "authors",
+    "errors": [
+      "At least 1 author is required"
+    ]
+  },
+  {
+    "field": "isbn",
+    "errors": [
+      "Invalid ISBN"
+    ]
+  }
+]
