@@ -103,7 +103,7 @@ class SeriesServiceTest extends AbstractRestAssuredTest {
 
     @Test
     @DisplayName("Create a series, user - 403")
-    void testCreateSeriesForbiddenFailed() {
+    void testCreateSeriesUserForbidden() {
         String content = readResourceAsString("json/series/request/add_valid_no_cycle.json");
 
         userRequest()
@@ -204,7 +204,7 @@ class SeriesServiceTest extends AbstractRestAssuredTest {
 
     @Test
     @DisplayName("Update series, user - 403")
-    void testUpdateSeriesForbiddenFailed() {
+    void testUpdateSeriesUserForbidden() {
         String content = readResourceAsString("json/series/request/update_no_cycle.json");
 
         userRequest()
@@ -285,7 +285,7 @@ class SeriesServiceTest extends AbstractRestAssuredTest {
 
     @Test
     @DisplayName("Delete series, user - 403")
-    void testDeleteSeriesForbiddenFailed() {
+    void testDeleteSeriesUserForbidden() {
         userRequest()
             .delete(SERIES_SERVICE_PATH_W_ID, SERIES_ID)
             .match(expectForbidden(getForbiddenExpectedBody()));

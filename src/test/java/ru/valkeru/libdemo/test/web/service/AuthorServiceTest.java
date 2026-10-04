@@ -84,7 +84,7 @@ class AuthorServiceTest extends AbstractRestAssuredTest {
 
     @Test
     @DisplayName("Add an author, user - 403")
-    void testCreateAuthorForbiddenFailed() {
+    void testCreateAuthorUserForbidden() {
         String payload = readResourceAsString("json/author/request/add_valid.json");
 
         userRequest()
@@ -174,7 +174,7 @@ class AuthorServiceTest extends AbstractRestAssuredTest {
 
     @Test
     @DisplayName("Update an author, user - 403")
-    void testUpdateAuthorForbiddenFailed() {
+    void testUpdateAuthorUserForbidden() {
         String payload = readResourceAsString("json/author/request/update_valid.json");
 
         userRequest()
@@ -234,7 +234,7 @@ class AuthorServiceTest extends AbstractRestAssuredTest {
 
     @Test
     @DisplayName("Delete author info, user - 403")
-    void testDeleteAuthorForbiddenFailed() {
+    void testDeleteAuthorUserForbidden() {
         userRequest()
             .delete(SERVICE_AUTHOR_ID_PATH_W_ID, START_UUID_VALUE)
             .match(expectForbidden(getForbiddenExpectedBody()));

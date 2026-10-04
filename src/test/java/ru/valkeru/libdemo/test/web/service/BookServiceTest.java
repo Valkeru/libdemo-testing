@@ -110,7 +110,7 @@ class BookServiceTest extends AbstractRestAssuredTest {
 
     @Test
     @DisplayName("Create a book, user - 403")
-    void testCreateBookForbiddenFailed() {
+    void testCreateBookUserForbidden() {
         String payload = readResourceAsString("json/book/request/create_request_valid.json");
 
         userRequest()
@@ -214,7 +214,7 @@ class BookServiceTest extends AbstractRestAssuredTest {
 
     @Test
     @DisplayName("Update a book, user - 403")
-    void testUpdateBookForbiddenFailed() {
+    void testUpdateBookUserForbidden() {
         String payload = readResourceAsString("json/book/request/update_valid_request.json");
 
         userRequest()
@@ -277,7 +277,7 @@ class BookServiceTest extends AbstractRestAssuredTest {
 
     @Test
     @DisplayName("Delete a book, user - 403")
-    void testDeleteBookForbiddenFailed() {
+    void testDeleteBookUserForbidden() {
         userRequest()
             .delete("/service/book/{id}", BOOK_ID)
             .match(expectForbidden(getForbiddenExpectedBody()));

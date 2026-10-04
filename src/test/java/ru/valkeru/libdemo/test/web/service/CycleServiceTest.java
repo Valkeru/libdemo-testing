@@ -85,7 +85,7 @@ class CycleServiceTest extends AbstractRestAssuredTest {
 
     @Test
     @DisplayName("Create a cycle, user - 403")
-    void testCreateCycleForbiddenFailed() {
+    void testCreateCycleUserForbidden() {
         String payload = readResourceAsString("json/cycle/request/cycle_valid.json");
 
         userRequest()
@@ -157,7 +157,7 @@ class CycleServiceTest extends AbstractRestAssuredTest {
 
     @Test
     @DisplayName("Update a cycle, user - 403")
-    void testUpdateCycleForbiddenFailed() {
+    void testUpdateCycleUserForbidden() {
         String payload = readResourceAsString("json/cycle/request/cycle_valid.json");
 
         userRequest()
@@ -251,7 +251,7 @@ class CycleServiceTest extends AbstractRestAssuredTest {
 
     @Test
     @DisplayName("Delete a cycle, user - 403")
-    void testDeleteCycleForbiddenFailed() {
+    void testDeleteCycleUserForbidden() {
         userRequest()
             .delete(CYCLE_SERVICE_PATH_W_ID, CYCLE_ID)
             .match(expectForbidden(getForbiddenExpectedBody()));
