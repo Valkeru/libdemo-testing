@@ -21,7 +21,7 @@ spring:
       connect-timeout: 3s
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:15432/libdemo
+    url: jdbc:postgresql://localhost:15432/${configuration.database.name}
     username: postgres
     password: postgres
   main:

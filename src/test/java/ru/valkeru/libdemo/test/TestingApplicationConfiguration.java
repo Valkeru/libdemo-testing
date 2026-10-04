@@ -47,7 +47,10 @@ public class TestingApplicationConfiguration {
                 .dependsOn(postgreSQLContainer, redisContainer)
                 .withEnv(
                     Map.ofEntries(
-                        Map.entry("SPRING_DATASOURCE_URL", "jdbc:postgresql://postgres:5432/libdemo?reWriteBatchedInserts=true"),
+                        Map.entry(
+                            "SPRING_DATASOURCE_URL",
+                            "jdbc:postgresql://postgres:5432/%s?reWriteBatchedInserts=true".formatted(postgreSQLContainer.getDatabaseName())
+                        ),
                         Map.entry("SPRING_DATASOURCE_USERNAME", postgreSQLContainer.getUsername()),
                         Map.entry("SPRING_DATASOURCE_PASSWORD", postgreSQLContainer.getPassword()),
                         Map.entry("SPRING_PROFILES_ACTIVE", "production"),
