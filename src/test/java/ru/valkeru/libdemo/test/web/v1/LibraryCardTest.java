@@ -1,7 +1,5 @@
 package ru.valkeru.libdemo.test.web.v1;
 
-import io.qameta.allure.Severity;
-import io.qameta.allure.SeverityLevel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,7 +37,6 @@ class LibraryCardTest extends AbstractRestAssuredTest {
         executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
     )
     @DisplayName("Create library card for user - success")
-    @Severity(SeverityLevel.BLOCKER)
     void testCreateLibraryCardSuccess() {
         String accessToken = userRequest()
             .post("/v1/library-card")

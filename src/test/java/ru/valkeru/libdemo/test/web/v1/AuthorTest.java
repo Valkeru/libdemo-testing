@@ -1,7 +1,5 @@
 package ru.valkeru.libdemo.test.web.v1;
 
-import io.qameta.allure.Severity;
-import io.qameta.allure.SeverityLevel;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.jdbc.Sql;
@@ -22,7 +20,6 @@ class AuthorTest extends AbstractRestAssuredTest {
         }
     )
     @DisplayName("Get author info by ID - success")
-    @Severity(SeverityLevel.BLOCKER)
     void testGetAuthorOk() {
         String expected = readResourceAsString("json/author/response/author.json");
 
@@ -33,7 +30,6 @@ class AuthorTest extends AbstractRestAssuredTest {
 
     @Test
     @DisplayName("Get author info by ID - not found")
-    @Severity(SeverityLevel.CRITICAL)
     void testGetAuthorNotFound() {
         String expected = readResourceAsString("json/author/response/not_found.json");
 
@@ -49,7 +45,6 @@ class AuthorTest extends AbstractRestAssuredTest {
         }
     )
     @DisplayName("Get authors list")
-    @Severity(SeverityLevel.BLOCKER)
     void testAuthorsListOk() {
         String expected = readResourceAsString("json/author/response/list.json");
 

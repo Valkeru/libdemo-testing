@@ -1,6 +1,10 @@
 package ru.valkeru.libdemo.test.wrapper;
 
 import io.restassured.specification.RequestSpecification;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+
+import java.util.Map;
 
 public final class WrappedRequestSpecification {
 
@@ -20,6 +24,14 @@ public final class WrappedRequestSpecification {
         specification
             .body(body)
             .contentType(contentType);
+
+        return this;
+    }
+
+    public WrappedRequestSpecification query(Map<String, ?> params) {
+        if (MapUtils.isNotEmpty(params)) {
+            specification.queryParams(params);
+        }
 
         return this;
     }
