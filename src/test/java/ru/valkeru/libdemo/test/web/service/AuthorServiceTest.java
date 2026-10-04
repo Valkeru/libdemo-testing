@@ -2,7 +2,6 @@ package ru.valkeru.libdemo.test.web.service;
 
 import net.javacrumbs.jsonunit.core.Option;
 import org.apache.http.HttpHeaders;
-import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -14,13 +13,21 @@ import ru.valkeru.libdemo.test.AbstractRestAssuredTest;
 
 import java.util.stream.Stream;
 
-import static org.hamcrest.Matchers.emptyString;
-import static org.hamcrest.Matchers.notNullValue;
 import static ru.valkeru.libdemo.test.constants.TestConstants.AUTHOR_ID;
 import static ru.valkeru.libdemo.test.constants.TestConstants.START_UUID_VALUE;
+import static ru.valkeru.libdemo.test.matcher.LibraryMatcher.expectCreated;
+import static ru.valkeru.libdemo.test.matcher.LibraryMatcher.expectForbidden;
+import static ru.valkeru.libdemo.test.matcher.LibraryMatcher.expectNoContent;
+import static ru.valkeru.libdemo.test.matcher.LibraryMatcher.expectNotAuthorized;
+import static ru.valkeru.libdemo.test.matcher.LibraryMatcher.expectNotFound;
+import static ru.valkeru.libdemo.test.matcher.LibraryMatcher.expectOk;
+import static ru.valkeru.libdemo.test.matcher.LibraryMatcher.expectBadRequest;
 
 @SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 class AuthorServiceTest extends AbstractRestAssuredTest {
+
+    public static final String SERVICE_AUTHOR_PATH = "/service/author";
+    public static final String SERVICE_AUTHOR_ID_PATH_W_ID = "/service/author/{id}";
 
     @ParameterizedTest
     @MethodSource("getBadRequestArguments")
@@ -29,16 +36,10 @@ class AuthorServiceTest extends AbstractRestAssuredTest {
         String payload = readResourceAsString(payloadPath);
         String expected = readResourceAsString(expectedResultPath);
 
-        String response = managerRequest()
-            .contentType(APPLICATION_JSON)
+        managerRequest()
             .body(payload)
-            .when().post("/service/author")
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_BAD_REQUEST)
-            .contentType(APPLICATION_JSON)
-            .extract().asString();
-
-        assertJsonContent(response, expected, Option.IGNORING_ARRAY_ORDER);
+            .post(SERVICE_AUTHOR_PATH)
+            .match(expectBadRequest(expected, Option.IGNORING_ARRAY_ORDER));
     }
 
     @Test
@@ -48,24 +49,49 @@ class AuthorServiceTest extends AbstractRestAssuredTest {
         String expected = readResourceAsString("json/author/response/created.json");
 
         String newAuthorPath = managerRequest()
-            .contentType(APPLICATION_JSON)
             .body(payload)
-            .when().post("/service/author")
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_CREATED)
-            .header(HttpHeaders.LOCATION, notNullValue())
-            .body(emptyString())
+            .post(SERVICE_AUTHOR_PATH)
+            .match(expectCreated())
             .extract()
             .header(HttpHeaders.LOCATION);
 
-        String response = notAuthenticatedRequest()
-            .when().get(newAuthorPath)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_OK)
-            .contentType(APPLICATION_JSON)
-            .extract().asString();
+        notAuthenticatedRequest()
+            .get(newAuthorPath)
+            .match(expectOk(expected));
+    }
 
-        assertJsonContent(response, expected);
+    @Test
+    @DisplayName("Add an author - 401")
+    void testCreateAuthorUnauthorized() {
+        String payload = readResourceAsString("json/author/request/add_valid.json");
+
+        notAuthenticatedRequest()
+            .body(payload)
+            .post(SERVICE_AUTHOR_PATH)
+            .match(expectNotAuthorized());
+    }
+
+    @Test
+    @DisplayName("Add an author, librarian - 403")
+    void testCreateAuthorForbidden() {
+        String payload = readResourceAsString("json/author/request/add_valid.json");
+
+        librarianRequest()
+            .body(payload)
+            .post(SERVICE_AUTHOR_PATH)
+            .match(expectForbidden(getForbiddenExpectedBody()));
+    }
+
+    // This test actually MUST fail because of incomplete exception handling in API
+    @Test
+    @DisplayName("Add an author, user - 403")
+    void testCreateAuthorForbiddenFailed() {
+        String payload = readResourceAsString("json/author/request/add_valid.json");
+
+        userRequest()
+            .body(payload)
+            .post(SERVICE_AUTHOR_PATH)
+            .match(expectForbidden(getForbiddenExpectedBody()));
     }
 
     @Test
@@ -74,15 +100,10 @@ class AuthorServiceTest extends AbstractRestAssuredTest {
         String payload = readResourceAsString("json/author/request/update_valid.json");
         String expected = readResourceAsString("json/author/response/not_found.json");
 
-        String response = managerRequest()
-            .contentType(APPLICATION_JSON)
+        managerRequest()
             .body(payload)
-            .when().patch("/service/author/{id}", START_UUID_VALUE)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_NOT_FOUND)
-            .extract().asString();
-
-        assertJsonContent(response, expected);
+            .patch(SERVICE_AUTHOR_ID_PATH_W_ID, START_UUID_VALUE)
+            .match(expectNotFound(expected));
 
     }
 
@@ -98,16 +119,10 @@ class AuthorServiceTest extends AbstractRestAssuredTest {
         String payload = readResourceAsString(payloadPath);
         String expected = readResourceAsString(expectedResultPath);
 
-        String response = managerRequest()
-            .contentType(APPLICATION_JSON)
+        managerRequest()
             .body(payload)
-            .when().patch("/service/author/{id}", AUTHOR_ID)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_BAD_REQUEST)
-            .contentType(APPLICATION_JSON)
-            .extract().asString();
-
-        assertJsonContent(response, expected, Option.IGNORING_ARRAY_ORDER);
+            .patch(SERVICE_AUTHOR_ID_PATH_W_ID, AUTHOR_ID)
+            .match(expectBadRequest(expected, Option.IGNORING_ARRAY_ORDER));
     }
 
     @Test
@@ -122,29 +137,52 @@ class AuthorServiceTest extends AbstractRestAssuredTest {
         String payload = readResourceAsString("json/author/request/update_valid.json");
         String expected = readResourceAsString("json/author/response/updated.json");
 
-        String initialResponse = notAuthenticatedRequest()
-            .when().get("/v1/author/{id}", AUTHOR_ID)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_OK)
-            .extract().asString();
-
-        assertJsonContent(initialResponse, initialExpected);
+        notAuthenticatedRequest()
+            .get("/v1/author/{id}", AUTHOR_ID)
+            .match(expectOk(initialExpected));
 
         managerRequest()
-            .contentType(APPLICATION_JSON)
             .body(payload)
-            .when().patch("/service/author/{id}", AUTHOR_ID)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_NO_CONTENT)
-            .extract().asString();
+            .patch(SERVICE_AUTHOR_ID_PATH_W_ID, AUTHOR_ID)
+            .match(expectNoContent());
 
-        String updatedResponse = notAuthenticatedRequest()
-            .when().get("/v1/author/{id}", AUTHOR_ID)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_OK)
-            .extract().asString();
+        notAuthenticatedRequest()
+            .get("/v1/author/{id}", AUTHOR_ID)
+            .match(expectOk(expected));
+    }
 
-        assertJsonContent(updatedResponse, expected);
+    @Test
+    @DisplayName("Update an author - 401")
+    void testUpdateAuthorUnauthorized() {
+        String payload = readResourceAsString("json/author/request/update_valid.json");
+
+        notAuthenticatedRequest()
+            .body(payload)
+            .patch(SERVICE_AUTHOR_ID_PATH_W_ID, START_UUID_VALUE)
+            .match(expectNotAuthorized());
+    }
+
+    @Test
+    @DisplayName("Update an author, librarian - 403")
+    void testUpdateAuthorForbidden() {
+        String payload = readResourceAsString("json/author/request/update_valid.json");
+
+        librarianRequest()
+            .body(payload)
+            .patch(SERVICE_AUTHOR_ID_PATH_W_ID, START_UUID_VALUE)
+            .match(expectForbidden(getForbiddenExpectedBody()));
+    }
+
+    // This test actually MUST fail because of incomplete exception handling in API
+    @Test
+    @DisplayName("Update an author, user - 403")
+    void testUpdateAuthorForbiddenFailed() {
+        String payload = readResourceAsString("json/author/request/update_valid.json");
+
+        userRequest()
+            .body(payload)
+            .patch(SERVICE_AUTHOR_ID_PATH_W_ID, START_UUID_VALUE)
+            .match(expectForbidden(getForbiddenExpectedBody()));
     }
 
     @Test
@@ -152,13 +190,9 @@ class AuthorServiceTest extends AbstractRestAssuredTest {
     void deleteAuthorNotFound() {
         String expected = readResourceAsString("json/author/response/not_found.json");
 
-        String response = managerRequest()
-            .when().delete("/service/author/{id}", START_UUID_VALUE)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_NOT_FOUND)
-            .extract().asString();
-
-        assertJsonContent(response, expected);
+        managerRequest()
+            .delete(SERVICE_AUTHOR_ID_PATH_W_ID, START_UUID_VALUE)
+            .match(expectNotFound(expected));
     }
 
     @Test
@@ -169,20 +203,44 @@ class AuthorServiceTest extends AbstractRestAssuredTest {
     )
     @DisplayName("Delete author info - success")
     void deleteAuthorOk() {
+        String existedExpected = readResourceAsString("json/author/response/author.json");
         notAuthenticatedRequest()
-            .when().get("/v1/author/{id}", AUTHOR_ID)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_OK);
+            .get("/v1/author/{id}", AUTHOR_ID)
+            .match(expectOk(existedExpected));
 
         managerRequest()
-            .when().delete("/service/author/{id}", AUTHOR_ID)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_NO_CONTENT);
+            .delete(SERVICE_AUTHOR_ID_PATH_W_ID, AUTHOR_ID)
+            .match(expectNoContent());
 
+        String expected = readResourceAsString("json/author/response/deleted_not_found.json");
         notAuthenticatedRequest()
-            .when().get("/v1/author/{id}", AUTHOR_ID)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_NOT_FOUND);
+            .get("/v1/author/{id}", AUTHOR_ID)
+            .match(expectNotFound(expected));
+    }
+
+    @Test
+    @DisplayName("Delete author info - 401")
+    void testDeleteAuthorUnauthorized() {
+        notAuthenticatedRequest()
+            .delete(SERVICE_AUTHOR_ID_PATH_W_ID, START_UUID_VALUE)
+            .match(expectNotAuthorized());
+    }
+
+    @Test
+    @DisplayName("Delete author info, librarian - 403")
+    void testDeleteAuthorForbidden() {
+        librarianRequest()
+            .delete(SERVICE_AUTHOR_ID_PATH_W_ID, START_UUID_VALUE)
+            .match(expectForbidden(getForbiddenExpectedBody()));
+    }
+
+    // This test actually MUST fail because of incomplete exception handling in API
+    @Test
+    @DisplayName("Delete author info, user - 403")
+    void testDeleteAuthorForbiddenFailed() {
+        userRequest()
+            .delete(SERVICE_AUTHOR_ID_PATH_W_ID, START_UUID_VALUE)
+            .match(expectForbidden(getForbiddenExpectedBody()));
     }
 
     private static Stream<Arguments> getBadRequestArguments() {

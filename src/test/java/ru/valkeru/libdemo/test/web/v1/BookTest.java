@@ -7,6 +7,8 @@ import org.springframework.test.context.jdbc.SqlMergeMode;
 import ru.valkeru.libdemo.test.AbstractRestAssuredTest;
 import ru.valkeru.libdemo.test.constants.TestConstants;
 
+import static ru.valkeru.libdemo.test.matcher.LibraryMatcher.expectOk;
+
 @SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 class BookTest extends AbstractRestAssuredTest {
 
@@ -14,13 +16,9 @@ class BookTest extends AbstractRestAssuredTest {
     void testListBooksEmptyList() {
         String expected = readResourceAsString("json/empty_list.json");
 
-        String response = notAuthenticatedRequest()
-            .when().get("/v1/books")
-            .then()
-            .statusCode(HttpStatus.SC_OK)
-            .extract().asString();
-
-        assertJsonContent(response, expected);
+        notAuthenticatedRequest()
+            .get("/v1/book")
+            .match(expectOk(expected));
     }
 
     @Test
@@ -35,19 +33,15 @@ class BookTest extends AbstractRestAssuredTest {
     void testListBooksOk() {
         String expected = readResourceAsString("json/book/response/list_ok.json");
 
-        String response = notAuthenticatedRequest()
-            .when().get("/v1/books")
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_OK)
-            .extract().asString();
-
-        assertJsonContent(response, expected);
+        notAuthenticatedRequest()
+            .get("/v1/book")
+            .match(expectOk(expected));
     }
 
     @Test
     void testGetBookNotFound() {
         notAuthenticatedRequest()
-            .when().get("/v1/books/{id}", TestConstants.START_UUID_VALUE)
+            .get("/v1/book/{id}", TestConstants.START_UUID_VALUE)
             .then().assertThat()
             .statusCode(HttpStatus.SC_NOT_FOUND);
     }
@@ -64,12 +58,8 @@ class BookTest extends AbstractRestAssuredTest {
     void testGetBookOk() {
         String expected = readResourceAsString("json/book/response/get_ok.json");
 
-        String response = notAuthenticatedRequest()
-            .when().get("/v1/books/{id}", TestConstants.BOOK_ID)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_OK)
-            .extract().asString();
-
-        assertJsonContent(response, expected);
+        notAuthenticatedRequest()
+            .get("/v1/book/{id}", TestConstants.BOOK_ID)
+            .match(expectOk(expected));
     }
 }

@@ -3,22 +3,19 @@ package ru.valkeru.libdemo.test.web.v1;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
-import io.restassured.response.ExtractableResponse;
-import io.restassured.response.Response;
-import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlMergeMode;
 import ru.valkeru.libdemo.test.AbstractRestAssuredTest;
-import ru.valkeru.libdemo.test.ApiConfig;
+import ru.valkeru.libdemo.test.constants.TestConstants;
 
 import java.io.IOException;
 import java.util.Base64;
 
-import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.notNullValue;
+import static ru.valkeru.libdemo.test.matcher.LibraryMatcher.expectCreated;
 
 @Sql(
     value = {
@@ -32,7 +29,7 @@ import static org.hamcrest.Matchers.notNullValue;
     executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS
 )
 @SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
-public class LibraryCardTest extends AbstractRestAssuredTest {
+class LibraryCardTest extends AbstractRestAssuredTest {
 
     @Test
     @Sql(
@@ -44,19 +41,16 @@ public class LibraryCardTest extends AbstractRestAssuredTest {
     @DisplayName("Create library card for user - success")
     @Severity(SeverityLevel.BLOCKER)
     void testCreateLibraryCardSuccess() throws IOException {
-        ExtractableResponse<Response> extractable = userRequest()
-            .basePath("/v1/library-card")
-            .noContentType()
-            .when().post()
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_CREATED)
-            .body(emptyString())
-            .header(ApiConfig.ACCESS_TOKEN_HEADER_NAME, notNullValue())
-            .header(ApiConfig.REFRESH_TOKEN_HEADER_NAME, notNullValue())
-            .extract();
+        String accessToken = userRequest()
+            .post("/v1/library-card")
+            .match(expectCreated())
+            .then()
+            .header(TestConstants.ACCESS_TOKEN_HEADER_NAME, notNullValue())
+            .header(TestConstants.REFRESH_TOKEN_HEADER_NAME, notNullValue())
+            .extract()
+            .header(TestConstants.ACCESS_TOKEN_HEADER_NAME);
 
         // Get and decode JWT payload
-        String accessToken = extractable.header(ApiConfig.ACCESS_TOKEN_HEADER_NAME);
         String[] parts = accessToken.split("\\.");
         byte[] payload = Base64.getUrlDecoder().decode(parts[1]);
 

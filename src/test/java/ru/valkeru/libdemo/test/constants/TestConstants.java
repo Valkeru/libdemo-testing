@@ -1,10 +1,12 @@
 package ru.valkeru.libdemo.test.constants;
 
-import java.util.UUID;
-
 public abstract class TestConstants {
 
     public static final String START_UUID_VALUE = "00000000-0000-0000-0000-000000000000";
+
+    public static final String ACCESS_TOKEN_HEADER_NAME = "Access-Token";
+    public static final String REFRESH_TOKEN_HEADER_NAME = "Refresh-Token";
+    public static final String REQUEST_ID_HEADER_NAME = "Request-ID";
 
     public static final String AUTHOR_ID = "84c1599c-21e6-47f3-a03b-12f6071da20b";
     public static final String CYCLE_ID = "7cc6be9b-7649-4955-bff9-8cbf7c4c429a";

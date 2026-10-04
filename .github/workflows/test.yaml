@@ -6,6 +6,9 @@ on:
       - "*"
   workflow_dispatch:
 
+env:
+  SPRING_PROFILES_ACTIVE: test-release
+
 jobs:
   test:
     runs-on: ubuntu-latest

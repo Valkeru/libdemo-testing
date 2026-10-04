@@ -6,7 +6,6 @@ import io.restassured.RestAssured;
 import io.restassured.http.Header;
 import io.restassured.specification.RequestSpecification;
 import lombok.Getter;
-import net.javacrumbs.jsonunit.core.Option;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,8 +18,7 @@ import org.springframework.test.context.jdbc.Sql;
 import ru.valkeru.libdemo.test.util.AuthenticationUtil;
 import ru.valkeru.libdemo.test.util.FileUtil;
 import ru.valkeru.libdemo.test.util.RedisUtil;
-
-import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import ru.valkeru.libdemo.test.wrapper.WrappedRequestSpecification;
 
 @SpringBootTest
 @Sql(
@@ -35,6 +33,9 @@ public class AbstractRestAssuredTest {
     @Getter
     private final ObjectMapper objectMapper;
 
+    @Getter
+    private final String forbiddenExpectedBody;
+
     @Autowired
     @Qualifier("apiUrl")
     private String uri;
@@ -47,6 +48,7 @@ public class AbstractRestAssuredTest {
 
     protected AbstractRestAssuredTest() {
         this.objectMapper = new ObjectMapper();
+        this.forbiddenExpectedBody = readResourceAsString("json/access_denied.json");
     }
 
     @BeforeAll
@@ -55,37 +57,43 @@ public class AbstractRestAssuredTest {
         redisUtil.clearCaches();
     }
 
-    protected final String readResourceAsString(String path) {
+    protected static String readResourceAsString(String path) {
         return FileUtil.readResourceAsString(path);
     }
 
-    protected static void assertJsonContent(String result, String expected) {
-        assertThatJson(result).isEqualTo(expected);
+    protected final WrappedRequestSpecification adminRequest() {
+        RequestSpecification specification = authenticatedRequest(authenticationUtil.adminToken());
+
+        return new WrappedRequestSpecification(specification);
     }
 
-    protected static void assertJsonContent(String result, String expected, Option option, Option... otherOptions) {
-        assertThatJson(result).when(option, otherOptions).isEqualTo(expected);
+    protected final WrappedRequestSpecification managerRequest() {
+        RequestSpecification specification = authenticatedRequest(authenticationUtil.managerToken());
+
+        return new WrappedRequestSpecification(specification);
     }
 
-    protected final RequestSpecification notAuthenticatedRequest() {
-        return RestAssured.given()
+    protected final WrappedRequestSpecification librarianRequest() {
+        RequestSpecification specification = authenticatedRequest(authenticationUtil.librarianToken());
+
+        return new WrappedRequestSpecification(specification);
+    }
+
+    protected final WrappedRequestSpecification userRequest() {
+        RequestSpecification specification = authenticatedRequest(authenticationUtil.userToken());
+
+        return new WrappedRequestSpecification(specification);
+    }
+
+    protected final WrappedRequestSpecification notAuthenticatedRequest() {
+        RequestSpecification specification = RestAssured.given()
             .filter(new AllureRestAssured())
             .baseUri(uri)
             .log()
             .ifValidationFails()
             .accept(APPLICATION_JSON);
-    }
 
-    protected final RequestSpecification adminRequest() {
-        return authenticatedRequest(authenticationUtil.adminToken());
-    }
-
-    protected final RequestSpecification managerRequest() {
-        return authenticatedRequest(authenticationUtil.managerToken());
-    }
-
-    protected final RequestSpecification userRequest() {
-        return authenticatedRequest(authenticationUtil.userToken());
+        return new WrappedRequestSpecification(specification);
     }
 
     private RequestSpecification authenticatedRequest(String token) {

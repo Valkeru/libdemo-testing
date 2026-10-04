@@ -2,7 +2,7 @@ package ru.valkeru.libdemo.test.web.service;
 
 import net.javacrumbs.jsonunit.core.Option;
 import org.apache.http.HttpHeaders;
-import org.apache.http.HttpStatus;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -14,9 +14,14 @@ import ru.valkeru.libdemo.test.constants.TestConstants;
 
 import java.util.stream.Stream;
 
-import static org.hamcrest.Matchers.emptyString;
-import static org.hamcrest.Matchers.notNullValue;
 import static ru.valkeru.libdemo.test.constants.TestConstants.BOOK_ID;
+import static ru.valkeru.libdemo.test.matcher.LibraryMatcher.expectBadRequest;
+import static ru.valkeru.libdemo.test.matcher.LibraryMatcher.expectCreated;
+import static ru.valkeru.libdemo.test.matcher.LibraryMatcher.expectForbidden;
+import static ru.valkeru.libdemo.test.matcher.LibraryMatcher.expectNoContent;
+import static ru.valkeru.libdemo.test.matcher.LibraryMatcher.expectNotAuthorized;
+import static ru.valkeru.libdemo.test.matcher.LibraryMatcher.expectNotFound;
+import static ru.valkeru.libdemo.test.matcher.LibraryMatcher.expectOk;
 
 @SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
 class BookServiceTest extends AbstractRestAssuredTest {
@@ -24,19 +29,15 @@ class BookServiceTest extends AbstractRestAssuredTest {
 
     @ParameterizedTest
     @MethodSource("badRequestPaths")
+    @DisplayName("Create a book - bad request")
     void testCreateBookBadRequest(String requestPath, String responsePath) {
         String payload = readResourceAsString(requestPath);
         String expected = readResourceAsString(responsePath);
 
-        String response = managerRequest()
-            .contentType(APPLICATION_JSON)
+        managerRequest()
             .body(payload)
-            .when().post("/service/book")
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_BAD_REQUEST)
-            .extract().asString();
-
-        assertJsonContent(response, expected, Option.IGNORING_ARRAY_ORDER);
+            .post("/service/book")
+            .match(expectBadRequest(expected, Option.IGNORING_ARRAY_ORDER));
     }
 
     @Sql(
@@ -49,19 +50,15 @@ class BookServiceTest extends AbstractRestAssuredTest {
     )
     @ParameterizedTest
     @MethodSource("notFoundPaths")
+    @DisplayName("Create a book - resource not found")
     void testCreateBookNotFound(String requestPath, String responsePath) {
         String payload = readResourceAsString(requestPath);
         String expected = readResourceAsString(responsePath);
 
-        String response = managerRequest()
-            .contentType(APPLICATION_JSON)
+        managerRequest()
             .body(payload)
-            .when().post("/service/book")
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_NOT_FOUND)
-            .extract().asString();
-
-        assertJsonContent(response, expected);
+            .post("/service/book")
+            .match(expectNotFound(expected));
     }
 
     @Test
@@ -72,29 +69,55 @@ class BookServiceTest extends AbstractRestAssuredTest {
             "classpath:sql/03.create_series.sql"
         }
     )
+    @DisplayName("Create a book - success")
     void testCreateBookOk() {
         String payload = readResourceAsString("json/book/request/create_request_valid.json");
+        String expected = readResourceAsString("json/book/response/service/book_created.json");
 
         String createdBookPath = managerRequest()
-            .contentType(APPLICATION_JSON)
             .body(payload)
-            .when().post("/service/book")
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_CREATED)
-            .header(HttpHeaders.LOCATION, notNullValue())
-            .body(emptyString())
+            .post("/service/book")
+            .match(expectCreated())
             .extract()
             .header(HttpHeaders.LOCATION);
 
-        String expected = readResourceAsString("json/book/response/service/book_created.json");
-        String response = notAuthenticatedRequest()
-            .when().get(createdBookPath)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_OK)
-            .contentType(APPLICATION_JSON)
-            .extract().asString();
+        notAuthenticatedRequest()
+            .get(createdBookPath)
+            .match(expectOk(expected));
+    }
 
-        assertJsonContent(response, expected);
+    @Test
+    @DisplayName("Create a book - 401")
+    void testCreateBookUnauthorized() {
+        String payload = readResourceAsString("json/book/request/create_request_valid.json");
+
+        notAuthenticatedRequest()
+            .body(payload)
+            .post("/service/book")
+            .match(expectNotAuthorized());
+    }
+
+    @Test
+    @DisplayName("Create a book, librarian - 403")
+    void testCreateBookForbidden() {
+        String payload = readResourceAsString("json/book/request/create_request_valid.json");
+
+        librarianRequest()
+            .body(payload)
+            .post("/service/book")
+            .match(expectForbidden(getForbiddenExpectedBody()));
+    }
+
+    // This test actually MUST fail because of incomplete exception handling in API
+    @Test
+    @DisplayName("Create a book, user - 403")
+    void testCreateBookForbiddenFailed() {
+        String payload = readResourceAsString("json/book/request/create_request_valid.json");
+
+        userRequest()
+            .body(payload)
+            .post("/service/book")
+            .match(expectForbidden(getForbiddenExpectedBody()));
     }
 
     @ParameterizedTest
@@ -107,20 +130,15 @@ class BookServiceTest extends AbstractRestAssuredTest {
             "classpath:sql/04.create_book.sql"
         }
     )
+    @DisplayName("Update a book - 400")
     void testUpdateBookBadRequest(String requestPath, String responsePath) {
         String payload = readResourceAsString(requestPath);
         String expected = readResourceAsString(responsePath);
 
-        String response = managerRequest()
-            .contentType(APPLICATION_JSON)
+        managerRequest()
             .body(payload)
-            .when().patch("/service/book/{id}", BOOK_ID)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_BAD_REQUEST)
-            .contentType(APPLICATION_JSON)
-            .extract().asString();
-
-        assertJsonContent(response, expected, Option.IGNORING_ARRAY_ORDER);
+            .patch("/service/book/{id}", BOOK_ID)
+            .match(expectBadRequest(expected, Option.IGNORING_ARRAY_ORDER));
     }
 
     @Sql(
@@ -133,20 +151,15 @@ class BookServiceTest extends AbstractRestAssuredTest {
     )
     @ParameterizedTest
     @MethodSource("notFoundPaths")
+    @DisplayName("Update a book - 404")
     void testUpdateBookNotFound(String requestPath, String expectedPath) {
         String payload = readResourceAsString(requestPath);
         String expected = readResourceAsString(expectedPath);
 
-        String response = managerRequest()
-            .contentType(APPLICATION_JSON)
+        managerRequest()
             .body(payload)
-            .when().patch("/service/book/{id}", BOOK_ID)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_NOT_FOUND)
-            .extract().asString();
-
-        assertJsonContent(response, expected);
-
+            .patch("/service/book/{id}", BOOK_ID)
+            .match(expectNotFound(expected));
     }
 
     @Test
@@ -158,44 +171,68 @@ class BookServiceTest extends AbstractRestAssuredTest {
             "classpath:sql/04.create_book.sql"
         }
     )
+    @DisplayName("Update a book - success")
     void testUpdateBookOk() {
         String initialExpected = readResourceAsString("json/book/response/get_ok.json");
         String payload = readResourceAsString("json/book/request/update_valid_request.json");
         String expected = readResourceAsString("json/book/response/book_updated.json");
 
-        String initialState = notAuthenticatedRequest()
-            .when().get("/v1/books/{id}", BOOK_ID)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_OK)
-            .contentType(APPLICATION_JSON)
-            .extract().asString();
-
-        assertJsonContent(initialState, initialExpected);
+        notAuthenticatedRequest()
+            .get("/v1/book/{id}", BOOK_ID)
+            .match(expectOk(initialExpected));
 
         managerRequest()
-            .contentType(APPLICATION_JSON)
             .body(payload)
-            .when().patch("/service/book/{id}", BOOK_ID)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_NO_CONTENT);
+            .patch("/service/book/{id}", BOOK_ID)
+            .match(expectNoContent());
 
-        String updatedState = notAuthenticatedRequest()
-            .when().get("/v1/books/{id}", BOOK_ID)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_OK)
-            .contentType(APPLICATION_JSON)
-            .extract().asString();
-
-        assertJsonContent(updatedState, expected, Option.IGNORING_ARRAY_ORDER);
+        notAuthenticatedRequest()
+            .get("/v1/book/{id}", BOOK_ID)
+            .match(expectOk(expected, Option.IGNORING_ARRAY_ORDER));
     }
 
+    @Test
+    @DisplayName("Update a book - 401")
+    void testUpdateBookUnauthorized() {
+        String payload = readResourceAsString("json/book/request/update_valid_request.json");
+
+        notAuthenticatedRequest()
+            .body(payload)
+            .patch("/service/book/{id}", BOOK_ID)
+            .match(expectNotAuthorized());
+    }
 
     @Test
+    @DisplayName("Update a book, librarian - 403")
+    void testUpdateBookForbidden() {
+        String payload = readResourceAsString("json/book/request/update_valid_request.json");
+
+        librarianRequest()
+            .body(payload)
+            .patch("/service/book/{id}", BOOK_ID)
+            .match(expectForbidden(getForbiddenExpectedBody()));
+    }
+
+    // This test actually MUST fail because of incomplete exception handling in API
+    @Test
+    @DisplayName("Update a book, user - 403")
+    void testUpdateBookForbiddenFailed() {
+        String payload = readResourceAsString("json/book/request/update_valid_request.json");
+
+        userRequest()
+            .body(payload)
+            .patch("/service/book/{id}", BOOK_ID)
+            .match(expectForbidden(getForbiddenExpectedBody()));
+    }
+
+    @Test
+    @DisplayName("Delete a book - 404")
     void testDeleteBookNotFound() {
+        String expectedBody = readResourceAsString("json/book/response/not_found.json");
+
         managerRequest()
-            .when().delete("/service/book/{id}", TestConstants.START_UUID_VALUE)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_NOT_FOUND);
+            .delete("/service/book/{id}", TestConstants.START_UUID_VALUE)
+            .match(expectNotFound(expectedBody));
     }
 
     @Test
@@ -207,21 +244,46 @@ class BookServiceTest extends AbstractRestAssuredTest {
             "classpath:sql/04.create_book.sql"
         }
     )
+    @DisplayName("Delete a book - OK")
     void testDeleteBookOk() {
+        String book = readResourceAsString("json/book/response/get_ok.json");
         notAuthenticatedRequest()
-            .when().get("/v1/books/{id}", TestConstants.BOOK_ID)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_OK);
+            .get("/v1/book/{id}", TestConstants.BOOK_ID)
+            .match(expectOk(book));
 
         managerRequest()
-            .when().delete("/service/book/{id}", TestConstants.BOOK_ID)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_NO_CONTENT);
+            .delete("/service/book/{id}", TestConstants.BOOK_ID)
+            .match(expectNoContent());
 
+        String expected = readResourceAsString("json/book/response/deleted_not_found.json");
         notAuthenticatedRequest()
-            .when().get("/v1/books/{id}", TestConstants.BOOK_ID)
-            .then().assertThat()
-            .statusCode(HttpStatus.SC_NOT_FOUND);
+            .get("/v1/book/{id}", TestConstants.BOOK_ID)
+            .match(expectNotFound(expected));
+    }
+
+    @Test
+    @DisplayName("Delete a book - 401")
+    void testDeleteBookUnauthorized() {
+        notAuthenticatedRequest()
+            .delete("/service/book/{id}", BOOK_ID)
+            .match(expectNotAuthorized());
+    }
+
+    @Test
+    @DisplayName("Delete a book, librarian - 403")
+    void testDeleteBookForbidden() {
+        librarianRequest()
+            .delete("/service/book/{id}", BOOK_ID)
+            .match(expectForbidden(getForbiddenExpectedBody()));
+    }
+
+    // This test actually MUST fail because of incomplete exception handling in API
+    @Test
+    @DisplayName("Delete a book, user - 403")
+    void testDeleteBookForbiddenFailed() {
+        userRequest()
+            .delete("/service/book/{id}", BOOK_ID)
+            .match(expectForbidden(getForbiddenExpectedBody()));
     }
 
     /**

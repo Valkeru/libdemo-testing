@@ -5,7 +5,7 @@ import io.restassured.http.ContentType;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import ru.valkeru.libdemo.test.ApiConfig;
+import ru.valkeru.libdemo.test.constants.TestConstants;
 import ru.valkeru.libdemo.test.dto.AuthenticationDto;
 
 @Component
@@ -69,7 +69,7 @@ public class AuthenticationUtil {
             .post(apiUrl + SIGN_IN_PATH)
             .then()
             .extract()
-            .header(ApiConfig.ACCESS_TOKEN_HEADER_NAME);
+            .header(TestConstants.ACCESS_TOKEN_HEADER_NAME);
     }
 
     private AuthenticationDto createAuthenticationDto(String userName) {

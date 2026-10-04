@@ -1,9 +1,12 @@
 configuration:
-  application-tag: 0.0.1-api-test-demo
+  application-tag: 0.0.2-api-test-demo
   database:
     name: libdemo
     password: postgres
   api:
+    schema: http
+    host: localhost
+    port: 8080
     path: /api
     username:
       user: default_user
@@ -14,6 +17,12 @@ configuration:
 spring:
   data:
     redis:
+      host: localhost
       connect-timeout: 3s
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:15432/libdemo
+    username: postgres
+    password: postgres
   main:
     banner-mode: off

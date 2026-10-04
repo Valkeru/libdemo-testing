@@ -6,10 +6,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
-import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -21,17 +22,23 @@ import java.util.Map;
 @TestConfiguration(proxyBeanMethods = false)
 public class TestingApplicationConfiguration {
 
-    private static final Network dockerNetwork = Network.newNetwork();
-
     private static GenericContainer<?> applicationContainer;
-    private static PostgreSQLContainer<?> postgreSQLContainer;
+    private static PostgreSQLContainer postgreSQLContainer;
     private static RedisContainer redisContainer;
 
     @Bean
+    @Profile("test-release")
+    public Network dockerNetwork() {
+        return Network.newNetwork();
+    }
+
+    @Bean
+    @Profile("test-release")
     public GenericContainer<?> applicationContainer(@Value("${configuration.api.path}") String apiPath,
                                                     @Value("${configuration.application-tag}") String applicationTag,
-                                                    PostgreSQLContainer<?> postgreSQLContainer,
-                                                    RedisContainer redisContainer) {
+                                                    PostgreSQLContainer postgreSQLContainer,
+                                                    RedisContainer redisContainer,
+                                                    Network dockerNetwork) {
         if (applicationContainer == null) {
             applicationContainer = new GenericContainer<>(
                 DockerImageName.parse("ghcr.io/valkeru/libdemo:%s".formatted(applicationTag))
@@ -44,6 +51,7 @@ public class TestingApplicationConfiguration {
                         Map.entry("SPRING_DATASOURCE_USERNAME", postgreSQLContainer.getUsername()),
                         Map.entry("SPRING_DATASOURCE_PASSWORD", postgreSQLContainer.getPassword()),
                         Map.entry("SPRING_PROFILES_ACTIVE", "production"),
+                        // Expose an endpoint to use for readiness check
                         Map.entry("MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE", "health"),
                         Map.entry("TZ", "UTC"),
                         Map.entry("SERVER_SERVLET_CONTEXT_PATH", apiPath)
@@ -63,10 +71,12 @@ public class TestingApplicationConfiguration {
 
     @Bean
     @ServiceConnection
-    public PostgreSQLContainer<?> getPostgresContainer(@Value("${configuration.database.password}") String password,
-                                                       @Value("${configuration.database.name}") String databaseName) {
+    @Profile("test-release")
+    public PostgreSQLContainer getPostgresContainer(@Value("${configuration.database.password}") String password,
+                                                       @Value("${configuration.database.name}") String databaseName,
+                                                       Network dockerNetwork) {
         if (postgreSQLContainer == null) {
-            postgreSQLContainer = new PostgreSQLContainer<>(DockerImageName.parse("postgres:18.6"))
+            postgreSQLContainer = new PostgreSQLContainer(DockerImageName.parse("postgres:18.6"))
                 .withNetwork(dockerNetwork)
                 .withNetworkAliases("postgres")
                 .withDatabaseName(databaseName)
@@ -79,10 +89,11 @@ public class TestingApplicationConfiguration {
 
     @Bean
     @ServiceConnection
-    public RedisContainer getRedisContainer() {
+    @Profile("test-release")
+    public RedisContainer getRedisContainer(Network dockerNetwork) {
         if (redisContainer == null) {
             redisContainer = new RedisContainer(DockerImageName.parse("redis:6.2.6"))
-                .withNetwork(Network.newNetwork())
+                .withNetwork(dockerNetwork)
                 .withNetworkAliases("redis");
         }
 

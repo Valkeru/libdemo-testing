@@ -26,10 +26,33 @@
         <junit-jupiter.version>6.1.3</junit-jupiter.version>
         <jwt.version>0.13.0</jwt.version>
         <spring-boot.version>4.1.1</spring-boot.version>
-        <json-unit.version>5.1.0</json-unit.version>
+        <json-unit.version>6.2.0</json-unit.version>
         <allure.version>3.0.0</allure.version>
         <allure-maven.version>3.1.0</allure-maven.version>
     </properties>
+
+    <profiles>
+        <profile>
+<!--            Profile to run tests with application release container. Active by default. Disable it to test local instance -->
+            <id>test-release</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <environmentVariables>
+                                <SPRING_PROFILES_ACTIVE>test-release</SPRING_PROFILES_ACTIVE>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <dependencyManagement>
         <dependencies>
@@ -37,6 +60,14 @@
                 <groupId>io.qameta.allure</groupId>
                 <artifactId>allure-bom</artifactId>
                 <version>${allure.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>net.javacrumbs.json-unit</groupId>
+                <artifactId>json-unit-bom</artifactId>
+                <version>${json-unit.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -72,8 +103,13 @@
 
         <dependency>
             <groupId>net.javacrumbs.json-unit</groupId>
-            <artifactId>json-unit-spring</artifactId>
-            <version>${json-unit.version}</version>
+            <artifactId>json-unit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>net.javacrumbs.json-unit</groupId>
+            <artifactId>json-unit-assertj</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -135,8 +171,8 @@
 
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>1.21.4</version>
+            <artifactId>testcontainers-postgresql</artifactId>
+            <version>2.0.5</version>
             <scope>test</scope>
         </dependency>
 
