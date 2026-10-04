@@ -83,7 +83,6 @@ class CycleServiceTest extends AbstractRestAssuredTest {
             .match(expectForbidden(getForbiddenExpectedBody()));
     }
 
-    // This test actually MUST fail because of incomplete exception handling in API
     @Test
     @DisplayName("Create a cycle, user - 403")
     void testCreateCycleForbiddenFailed() {
@@ -156,7 +155,6 @@ class CycleServiceTest extends AbstractRestAssuredTest {
             .match(expectForbidden(getForbiddenExpectedBody()));
     }
 
-    // This test actually MUST fail because of incomplete exception handling in API
     @Test
     @DisplayName("Update a cycle, user - 403")
     void testUpdateCycleForbiddenFailed() {
@@ -251,7 +249,6 @@ class CycleServiceTest extends AbstractRestAssuredTest {
             .match(expectForbidden(getForbiddenExpectedBody()));
     }
 
-    // This test actually MUST fail because of incomplete exception handling in API
     @Test
     @DisplayName("Delete a cycle, user - 403")
     void testDeleteCycleForbiddenFailed() {

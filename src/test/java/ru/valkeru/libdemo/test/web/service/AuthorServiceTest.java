@@ -82,7 +82,6 @@ class AuthorServiceTest extends AbstractRestAssuredTest {
             .match(expectForbidden(getForbiddenExpectedBody()));
     }
 
-    // This test actually MUST fail because of incomplete exception handling in API
     @Test
     @DisplayName("Add an author, user - 403")
     void testCreateAuthorForbiddenFailed() {
@@ -173,7 +172,6 @@ class AuthorServiceTest extends AbstractRestAssuredTest {
             .match(expectForbidden(getForbiddenExpectedBody()));
     }
 
-    // This test actually MUST fail because of incomplete exception handling in API
     @Test
     @DisplayName("Update an author, user - 403")
     void testUpdateAuthorForbiddenFailed() {
@@ -234,7 +232,6 @@ class AuthorServiceTest extends AbstractRestAssuredTest {
             .match(expectForbidden(getForbiddenExpectedBody()));
     }
 
-    // This test actually MUST fail because of incomplete exception handling in API
     @Test
     @DisplayName("Delete author info, user - 403")
     void testDeleteAuthorForbiddenFailed() {

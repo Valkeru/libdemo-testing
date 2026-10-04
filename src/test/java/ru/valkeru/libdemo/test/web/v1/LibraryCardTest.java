@@ -1,6 +1,5 @@
 package ru.valkeru.libdemo.test.web.v1;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
 import org.junit.jupiter.api.Assertions;
@@ -10,8 +9,9 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlMergeMode;
 import ru.valkeru.libdemo.test.AbstractRestAssuredTest;
 import ru.valkeru.libdemo.test.constants.TestConstants;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.util.Base64;
 
 import static org.hamcrest.Matchers.notNullValue;
@@ -40,7 +40,7 @@ class LibraryCardTest extends AbstractRestAssuredTest {
     )
     @DisplayName("Create library card for user - success")
     @Severity(SeverityLevel.BLOCKER)
-    void testCreateLibraryCardSuccess() throws IOException {
+    void testCreateLibraryCardSuccess() {
         String accessToken = userRequest()
             .post("/v1/library-card")
             .match(expectCreated())
@@ -54,9 +54,9 @@ class LibraryCardTest extends AbstractRestAssuredTest {
         String[] parts = accessToken.split("\\.");
         byte[] payload = Base64.getUrlDecoder().decode(parts[1]);
 
-        JsonNode node = getObjectMapper().readTree(payload);
+        JsonNode node = new ObjectMapper().readTree(payload);
 
         Assertions.assertTrue(node.hasNonNull("role"));
-        Assertions.assertEquals("READER", node.get("role").asText());
+        Assertions.assertEquals("READER", node.get("role").asString());
     }
 }

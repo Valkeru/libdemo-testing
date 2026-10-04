@@ -3,13 +3,15 @@ package ru.valkeru.libdemo.test.wrapper;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
-import lombok.RequiredArgsConstructor;
 import ru.valkeru.libdemo.test.matcher.ResponseMatcher;
 
-@RequiredArgsConstructor
 public class WrappedResponse {
 
     private final Response response;
+
+    public WrappedResponse(Response response) {
+        this.response = response;
+    }
 
     public WrappedResponse match(ResponseMatcher matcher) {
         matcher.match(response);

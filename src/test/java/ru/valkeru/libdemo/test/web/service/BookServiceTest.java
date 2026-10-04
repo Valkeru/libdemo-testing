@@ -108,7 +108,6 @@ class BookServiceTest extends AbstractRestAssuredTest {
             .match(expectForbidden(getForbiddenExpectedBody()));
     }
 
-    // This test actually MUST fail because of incomplete exception handling in API
     @Test
     @DisplayName("Create a book, user - 403")
     void testCreateBookForbiddenFailed() {
@@ -213,7 +212,6 @@ class BookServiceTest extends AbstractRestAssuredTest {
             .match(expectForbidden(getForbiddenExpectedBody()));
     }
 
-    // This test actually MUST fail because of incomplete exception handling in API
     @Test
     @DisplayName("Update a book, user - 403")
     void testUpdateBookForbiddenFailed() {
@@ -277,7 +275,6 @@ class BookServiceTest extends AbstractRestAssuredTest {
             .match(expectForbidden(getForbiddenExpectedBody()));
     }
 
-    // This test actually MUST fail because of incomplete exception handling in API
     @Test
     @DisplayName("Delete a book, user - 403")
     void testDeleteBookForbiddenFailed() {

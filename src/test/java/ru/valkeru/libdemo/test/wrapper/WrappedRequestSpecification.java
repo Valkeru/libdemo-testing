@@ -1,14 +1,16 @@
 package ru.valkeru.libdemo.test.wrapper;
 
 import io.restassured.specification.RequestSpecification;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 public final class WrappedRequestSpecification {
 
     private static final String APPLICATION_JSON = "application/json";
 
     private final RequestSpecification specification;
+
+    public WrappedRequestSpecification(RequestSpecification specification) {
+        this.specification = specification;
+    }
 
     public WrappedRequestSpecification body(String body) {
         return body(body, APPLICATION_JSON);

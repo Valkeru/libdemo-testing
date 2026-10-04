@@ -101,7 +101,6 @@ class SeriesServiceTest extends AbstractRestAssuredTest {
             .match(expectForbidden(getForbiddenExpectedBody()));
     }
 
-    // This test actually MUST fail because of incomplete exception handling in API
     @Test
     @DisplayName("Create a series, user - 403")
     void testCreateSeriesForbiddenFailed() {
@@ -203,7 +202,6 @@ class SeriesServiceTest extends AbstractRestAssuredTest {
             .match(expectForbidden(getForbiddenExpectedBody()));
     }
 
-    // This test actually MUST fail because of incomplete exception handling in API
     @Test
     @DisplayName("Update series, user - 403")
     void testUpdateSeriesForbiddenFailed() {
@@ -285,7 +283,6 @@ class SeriesServiceTest extends AbstractRestAssuredTest {
             .match(expectForbidden(getForbiddenExpectedBody()));
     }
 
-    // This test actually MUST fail because of incomplete exception handling in API
     @Test
     @DisplayName("Delete series, user - 403")
     void testDeleteSeriesForbiddenFailed() {

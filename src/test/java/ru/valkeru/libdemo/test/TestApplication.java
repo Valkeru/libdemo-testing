@@ -2,12 +2,17 @@ package ru.valkeru.libdemo.test;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 import org.testcontainers.containers.GenericContainer;
+import ru.valkeru.libdemo.test.config.ApiProperties;
 
 // required for spring boot
 @SpringBootApplication
+@EnableConfigurationProperties({
+    ApiProperties.class
+})
 public class TestApplication {
 
     /**
