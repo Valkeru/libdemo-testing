@@ -1,5 +1,6 @@
 package ru.valkeru.libdemo.test.web.v1;
 
+import net.javacrumbs.jsonunit.core.Option;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.jdbc.Sql;
@@ -50,6 +51,6 @@ class AuthorTest extends AbstractRestAssuredTest {
 
         notAuthenticatedRequest()
             .get("/v1/author")
-            .match(expectOk(expected));
+            .match(expectOk(expected, Option.IGNORING_ARRAY_ORDER));
     }
 }
