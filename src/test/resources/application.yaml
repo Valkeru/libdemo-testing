@@ -1,5 +1,5 @@
 configuration:
-  application-tag: 0.0.3-api-test-demo
+  application-tag: 0.0.4-api-test-demo
   database:
     name: libdemo
     password: postgres

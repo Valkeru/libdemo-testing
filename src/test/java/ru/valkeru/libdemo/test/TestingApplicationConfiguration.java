@@ -57,7 +57,8 @@ public class TestingApplicationConfiguration {
                         // Expose an endpoint to use for readiness check
                         Map.entry("MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE", "health"),
                         Map.entry("TZ", "UTC"),
-                        Map.entry("SERVER_SERVLET_CONTEXT_PATH", apiPath)
+                        Map.entry("SERVER_SERVLET_CONTEXT_PATH", apiPath),
+                        Map.entry("SPRING_DATA_REDIS_HOST", "redis")
                     )
                 )
                 .withExposedPorts(8080)
@@ -93,7 +94,7 @@ public class TestingApplicationConfiguration {
     @Bean
     @ServiceConnection
     @Profile("test-release")
-    public RedisContainer getRedisContainer(Network dockerNetwork) {
+    public RedisContainer redisContainer(Network dockerNetwork) {
         if (redisContainer == null) {
             redisContainer = new RedisContainer(DockerImageName.parse("redis:6.2.6"))
                 .withNetwork(dockerNetwork)
