@@ -22,7 +22,7 @@ import ru.valkeru.libdemo.test.wrapper.WrappedRequestSpecification;
 
 import java.util.Set;
 
-@SpringBootTest
+@SpringBootTest(classes = TestApplication.class)
 @Sql(
     value = "classpath:sql/delete/00.truncate.sql"
 )

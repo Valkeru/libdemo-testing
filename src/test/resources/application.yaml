@@ -15,6 +15,10 @@ configuration:
       admin: admin
     default_password: password
 spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.data.redis.autoconfigure.DataRedisRepositoriesAutoConfiguration
+      - org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration
   data:
     redis:
       host: localhost
